@@ -46,7 +46,26 @@ function Home() {
 
     settoDo("");
   }
-  console.log(formatted);
+  
+  const updateStatus=async(id,status)=>{
+    const result=await axiosInstance.post(`http://localhost:4000/users/UpdateStatus/${id}`,{
+      status:status
+    });
+    if(result.data.success){
+      fetchToDo();
+    }else{
+      alert(result.data.message);
+    }
+  }
+
+  const removeTask=async(id)=>{
+    const result=await axiosInstance.post(`http://localhost:4000/users/deleteToDo/${id}`);
+    if(result.data.success){
+      fetchToDo();
+    }else{
+      alert(result.data.message);
+    }
+  }
       
   return (
       <div className="bg-gradient-to-br from-purple-400 to-indigo-900 min-h-screen flex justify-center pt-56">
@@ -59,11 +78,12 @@ function Home() {
             toDos.map((obj)=>{
               console.log(obj);
               return(
-                <div className='toDo mt-9 bg-gray-200 rounded-lg p-3'> <input type="checkbox"  name="" id="" className='h-6 w-6 mr-2 rounded' onChange={(e)=>{
+                <div className='toDo mt-9 bg-gray-200 rounded-lg p-3'> <input type="checkbox"  name="" id="" className='h-6 w-6 mr-2 rounded' checked={obj.status} onChange={(e)=>{updateStatus(obj.id,obj.status)
                   
                     }}
                      />
-               <span className='font-bold'> {obj.value}</span> {obj.status && <span className='CompletionStatus'>Completed</span>} <button className='ml-4 text-red-500' onClick={()=>{
+               <span className='font-bold'> {obj.value}</span> {obj.status && <span className='CompletionStatus text-green-600'>Completed</span>} <button className='ml-4 text-red-500' onClick={()=>{
+                removeTask(obj.id);
                }}>RemoveTask</button></div>
 
               )
