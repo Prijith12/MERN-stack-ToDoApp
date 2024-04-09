@@ -1,12 +1,31 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import axiosInstance from '../axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 
 
 function Home() {
   let [toDo,settoDo]=useState(null)
   let [toDos,settoDos]=useState([]);
+  const navigate=useNavigate();
+  useEffect(()=>{
+   fetchToDo();
+  },[]);
 
+  const fetchToDo=async()=>{
+    const result=await axiosInstance.get('http://localhost:4000/users/viewToDo');
+    if(result.data.toDos){
+      settoDos(result.data.toDos.toDos);
+      console.log("hi fetch to do executed")
+      console.log(result.data.toDos.toDos)
+    }else if(result.data.message==="notAuth"){
+      settoDo(null);
+      settoDos([]);
+      navigate('/');
+    }
+  }
   let date=new Date();
   let formatted=date.toDateString();
   let day=date.getDay();
@@ -14,8 +33,17 @@ function Home() {
   let datee=date.getDate();
   let days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   let months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  let addTODO=()=>{
-    settoDos([...toDos,{id:Date.now(),value:toDo,status:false}]);
+  let addTODO=async()=>{
+    const result= await axiosInstance.post('http://localhost:4000/users/addToDo',{
+      id:Date.now(),value:toDo,status:false
+    })
+    if(result.data.message==="notAuth"){
+      navigate('/login');
+    }
+    if(result.data.success){
+      fetchToDo();
+    }
+
     settoDo("");
   }
   console.log(formatted);
@@ -32,25 +60,10 @@ function Home() {
               console.log(obj);
               return(
                 <div className='toDo mt-9 bg-gray-200 rounded-lg p-3'> <input type="checkbox"  name="" id="" className='h-6 w-6 mr-2 rounded' onChange={(e)=>{
-                  settoDos([...toDos])
-                  console.log(e.target.value);
-                  toDos.filter(function(value){
-                    if(value.id===obj.id){
-                      if(value.status===false){
-                        value.status=true
-                      }else if(value.status===true){
-                        value.status=false;
-                      }
-                    }
-                    return value
-                    
-                  })
-                  console.log(obj);
-
-                }} />
+                  
+                    }}
+                     />
                <span className='font-bold'> {obj.value}</span> {obj.status && <span className='CompletionStatus'>Completed</span>} <button className='ml-4 text-red-500' onClick={()=>{
-              settoDos(toDos.filter((data) => data.id !== obj.id));
-
                }}>RemoveTask</button></div>
 
               )

@@ -1,16 +1,17 @@
 import React from 'react'
 import axios from "axios"
 import { useState } from 'react'
-
-
+import { useNavigate } from 'react-router-dom';
 
 
 function Signups() {
+    const navigate=useNavigate()
     const [name,setName]=useState('');
     const [email,setEmail]=useState('');
     const [password,setPassword]=useState('');
     const[success,setSuccess]=useState(false);
-    const [message,setMessage]=useState('')
+    const [message,setMessage]=useState('');
+    const[alertStatus,setAlertStatus]=useState(false)
 
     const handleSignup=async()=>{
         try{
@@ -23,8 +24,10 @@ function Signups() {
             console.log(result.data.success);
             setMessage(result.data.message);
             if(result.data.success===true){
+                const token=result.data.token
+                localStorage.setItem('token',token);
                 setSuccess(false);
-               
+                setAlertStatus(true);
             }else{
                 setSuccess(true);
             }
@@ -33,11 +36,24 @@ console.log('Error sending'+err)
         }
         
     }
+
+    const handleAlertOK=()=>{
+        navigate('/');
+        window.location.reload();
+    } 
     return (
         <div>
             <div>
                 <div className=" flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-md w-full space-y-8">
+                        <div>
+                            {alertStatus&& <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                                    <span className="block sm:inline">SignUp was Successfull</span>
+                                    <button className="absolute top-1 right-0 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded" onClick={handleAlertOK}>
+                                        OK
+                                    </button>
+                                </div>}
+                        </div>
                         <div>
                             {success?<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                             <span className="block sm:inline"> {message}</span>
